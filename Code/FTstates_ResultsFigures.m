@@ -1,4 +1,62 @@
-%% Density Distributions
+%% miniplots for the framework figure
+plot(data.T8)
+close('all')
+clc
+clear 
+size1 = 40;
+addpath(genpath('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures'))
+path_directory = 'C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures';
+%%%%*** daily data
+file_name = 'NRCS_Toolik.xlsx';
+opts = spreadsheetImportOptions("NumVariables", 13);
+% Specify sheet and range
+opts.Sheet = "Sheet1";
+opts.DataRange = "A3:M8143";
+% Specify column names and types
+opts.VariableNames = ["Date", "Tair", "T0", "T8", "T16", "T23", "T31", "T38", "T46", "T61", "T76", "T97", "PCPT"];
+opts.VariableTypes = ["datetime", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double"];
+% Import the data
+data = readtable([path_directory '\' file_name], opts, "UseExcel", false);
+data = removevars(data, ["PCPT","T38","T23","T31","T46","T61","T76", "T97"]);
+data = table2timetable(data);
+
+start_ind = datetime('17-Sep-1998','Format','dd-MMM-uuuu');
+end_ind = datetime('17-Sep-1999','Format','dd-MMM-uuuu');
+S = timerange(start_ind,end_ind,'closed');
+data = data(S,:);
+
+% 
+figure('units','normalized','OuterPosition',[0 0 1 1]);
+t = tiledlayout('flow', 'TileSpacing', 'tight', 'Padding', 'tight');
+nexttile
+plot(data.Date, data.T8, '-o', 'Color','#298BC3', 'LineWidth',1.5, 'MarkerFaceColor','w','MarkerSize',3)
+% xlabel(t, 'Date (in days)', 'FontSize', 40, 'interpreter','latex');
+ylabel(t, 'Soil temperature at Depth = 8 cm', 'FontSize', 40, 'interpreter','latex');
+set(gca,'Box','on', 'FontSize',40, 'TickLabelInterpreter', 'latex');
+yline(0, ':','0$^{\circ}$C Threshold',Interpreter='latex', LabelHorizontalAlignment='center', LabelVerticalAlignment='middle', FontSize=30, Color='#EDB120', LineWidth=2);
+exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_framework_threshold.pdf'),'Resolution',300)
+
+
+%
+figure('units','normalized','OuterPosition',[0 0 1 1]);
+t = tiledlayout('flow', 'TileSpacing', 'tight', 'Padding', 'tight');
+nexttile, hold on
+
+b = bar([0,7,30,90], [.5, .5, -.5, .5],'BarWidth', .9,'EdgeColor','none','FaceColor','flat');
+b.CData(1,:) = [247 174 48]./255;
+b.CData(3,:) = [41 139 195]./255;
+b.CData(2,:) = [247 174 48]./255;
+b.CData(4,:) = [247 174 48]./255;
+
+set(gca, 'Box', 'on', 'FontSize', 40, 'TickLabelInterpreter', 'latex', ...
+'YMinorGrid', 'off', 'YMinorTick', 'off', 'TickDir', 'none', 'XGrid', 'on','YGrid','on',...
+'XTick', [0 7 30 90], 'xticklabels', {'+0 days', '+7 days', '+30 days', '+90 days'},'XTickLabelRotation',90, 'YTick', [-0.5 0.5], 'yticklabels', {'Freezing state', 'Thawing state'});
+ylim([-0.6,.6])
+hold on
+plot([0,7,30,90], [.5, .5, -.5, .5], 'k--o','LineWidth',1, 'MarkerFaceColor','auto')
+exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_framework_prdhrz.pdf'),'Resolution',300)
+
+%% * Density Distributions
 %TOOLIK LAKE
 close('all')
 clc
@@ -26,7 +84,7 @@ S = timerange(start_ind,end_ind,'closed');
 data = data(S,:);
 
 figure('units','normalized','OuterPosition',[0 0 1 1]);
-t = tiledlayout(4,2,'TileSpacing','tight','Padding','tight');
+t = tiledlayout(4,2,'TileSpacing','compact','Padding','tight');
 
 depths = {'Tair', 'T0', 'T8', 'T16'};
 jj = 1;
@@ -52,8 +110,8 @@ for j = 1:length(depths)
 
     if j == 1
         title(strcat({'Height = 1.5 m ($\Delta \alpha_3$ = '},num2str(round(abs(skwDiff(j)),2)), ')'),'Interpreter','latex');
-        legend1 = legend(gca,'show','Location','northeastoutside');
-        set(legend1,'Orientation','vertical','Interpreter','latex','FontSize',size1-10);
+        % legend1 = legend(gca,'show','Location','northeastoutside');
+        % set(legend1,'Orientation','vertical','Interpreter','latex','FontSize',size1-10);
     else
         title(strcat({'Depth = '},strrep(strrep(depths{j},'T',''),'_','\_'),{' cm ($\Delta \alpha_3$ = '},num2str(round(abs(skwDiff(j)),2)), ')'),'Interpreter','latex');
     end        
@@ -66,9 +124,9 @@ for j = 1:length(depths)
             'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [0 0.22], 'xlim', [-40 30]);        
     end    
 end
-ylabel(t, 'Density', 'FontSize', size1-10, 'interpreter', 'latex');
-xlabel(gca, 'Temperature at Toolik Lake($^{\circ}C$)', 'FontSize', size1-10, 'interpreter', 'latex');
-exportgraphics(gcf, ['C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\','FT_DensityDistribution_Toolik.pdf'],'Resolution',300)
+ylabel(t, 'Probability Density (1/$^{\circ}$C)', 'FontSize', size1-10, 'interpreter', 'latex');
+xlabel(gca, 'Temperatures at Toolik Lake ($^{\circ}C$)', 'FontSize', size1-10, 'interpreter', 'latex');
+% exportgraphics(gcf, ['C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\','FT_DensityDistribution_Toolik.pdf'],'Resolution',300)
 
 % Deadhorse
 addpath(genpath('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures'))
@@ -124,11 +182,11 @@ end_ind = datetime('30-May-2000','Format','dd-MMM-uuuu');
 S = timerange(start_ind,end_ind,'closed');
 data = data(S,:);
 
-figure('units','normalized','OuterPosition',[0 0 1 1]);
-t = tiledlayout(4,2,'TileSpacing','tight','Padding','tight');
+% figure('units','normalized','OuterPosition',[0 0 1 1]);
+% t = tiledlayout(4,2,'TileSpacing','tight','Padding','tight');
 
 depths = {'Tair', 'T0', 'T_07', 'T_12'};
-jj = 1;
+jj = 2;
 for j = 1:length(depths)
     nexttile(jj),
     hold on
@@ -151,30 +209,31 @@ for j = 1:length(depths)
 
     if j == 1
         title(strcat({'Height = 1.5 m ($\Delta \alpha_3$ = '},num2str(round(abs(skwDiff(j)),2)), ')'),'Interpreter','latex');
-        legend1 = legend(gca,'show','Location','northeastoutside');
-        set(legend1,'Orientation','vertical','Interpreter','latex','FontSize',size1-10);
     else
         title(strcat({'Depth = '},strrep(strrep(strrep(depths{j},'T',''),'_0',''),'_',''),{' cm ($\Delta \alpha_3$ = '},num2str(round(abs(skwDiff(j)),2)), ')'),'Interpreter','latex');
     end        
     jj = jj + 2; 
     if j~=4
-        set(gca, 'Box', 'on', 'xticklabels',[], 'FontSize', size1-15, 'TickLabelInterpreter', 'latex', ...
+        set(gca, 'Box', 'on', 'xticklabels',[],'yticklabels',[], 'FontSize', size1-15, 'TickLabelInterpreter', 'latex', ...
             'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [0 0.22], 'xlim', [-40 30]);
     else
-        set(gca, 'Box', 'on', 'FontSize', size1-15, 'TickLabelInterpreter', 'latex', ...
+        set(gca, 'Box', 'on','yticklabels',[], 'FontSize', size1-15, 'TickLabelInterpreter', 'latex', ...
             'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [0 0.22], 'xlim', [-40 30]);        
     end
 end
 
-ylabel(t, 'Density', 'FontSize', size1-10, 'interpreter', 'latex');
-xlabel(gca, 'Temperature at Deadhorse ($^{\circ}C$)', 'FontSize', size1-10, 'interpreter', 'latex');
+ylabel(t, 'Probability Density (1/$^{\circ}$C)', 'FontSize', size1-10, 'interpreter', 'latex');
+xlabel(gca, 'Temperatures at Deadhorse ($^{\circ}C$)', 'FontSize', size1-10, 'interpreter', 'latex');
+legend1 = legend(gca,'show','Location','northeastoutside');
+set(legend1,'Orientation','horizontal','Interpreter','latex','FontSize',size1-10);
+legend1.Layout.Tile = 'North'; % <-- place legend east of tiles
 
-exportgraphics(gcf, ['C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\','FT_DensityDistribution_Deadhorse.pdf'],'Resolution',300)
+exportgraphics(gcf, ['C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\','FT_DensityDistributions.pdf'],'Resolution',300)
 
-%% timeseries - TOOLIK LAKE
+%% * Timeseries - Plot (all together)
 clc
 clear 
-size1 = 40;
+size1 = 25;
 addpath(genpath('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures'))
 path_directory = 'C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures';
 %%%%*** daily data
@@ -203,9 +262,9 @@ cmap = get(0, 'defaultaxescolororder');
 
 figure('units','normalized','OuterPosition',[0 0 1 1]);
 % Create a tiled layout with 3 tiles (one for each depth)
-t = tiledlayout(3, 1, 'TileSpacing', 'tight', 'Padding', 'tight');
+t = tiledlayout(3, 2, 'TileSpacing', 'compact', 'Padding', 'tight');
 
-nexttile,
+nexttile(1),
 ind1 = find(data.T0<0);
 ind2 = find(data.T0>=0);
 scatter(data.Date(ind1),data.T0(ind1),12,cmap(1,:))
@@ -215,15 +274,14 @@ scatter(data.Date(ind2),data.T0(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceCo
 set(gca, 'Box', 'on', 'XTick',[], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp.max]);
 % Set title for each subplot
-title('Depth = 0 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+title('Depth = 0 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
    
 
-nexttile,
+nexttile(3),
 ind1 = find(data.T8<0);
 ind2 = find(data.T8>=0);
 scatter(data.Date(ind1),data.T8(ind1),12,cmap(1,:))
@@ -232,14 +290,13 @@ scatter(data.Date(ind2),data.T8(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceCo
 set(gca, 'Box', 'on', 'XTick',[], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp.max]);
 % Set title for each subplot
-title('Depth = 8 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+title('Depth = 8 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
 
-nexttile,
+nexttile(5),
 ind1 = find(data.T16<0);
 ind2 = find(data.T16>=0);
 scatter(data.Date(ind1),data.T16(ind1),12,cmap(1,:))
@@ -248,24 +305,23 @@ scatter(data.Date(ind2),data.T16(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceC
 set(gca, 'Box', 'on',  'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp.max]);
 % Set title for each subplot
-title('Depth = 16 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+title('Depth = 16 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
-ylabel(t, 'Soil temperature $(^{\circ}C)$','interpreter','latex','FontSize',size1+10);
+ylabel(t, 'Soil temperature $(^{\circ}C)$','interpreter','latex','FontSize',size1+5);
+xlabel(gca, 'Toolik Lake','interpreter','latex','FontSize',size1+5)
+% %Export
+% exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Toolik.pdf'),'ContentType','vector')
+% fprintf('Finito!\n')
+% exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Toolik.pdf'),'ContentType','vector')
+% close(gcf)
 
-%Export
-exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Toolik.pdf'),'ContentType','vector')
-fprintf('Finito!\n')
-exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Toolik.pdf'),'ContentType','vector')
-close(gcf)
 
-
-%% timeseries - Deadhorse
-clear
-size1 = 40;
+%%timeseries - Deadhorse
+clearvars -except min_tmp max_tmp t     %deletes all variables except X in workspace
+size1 = 25;
 addpath(genpath('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures'))
 path_directory = 'C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\AirAndActiveLayerTemperatures\data\Deadhorse';
 % Import the TXT data
@@ -319,67 +375,65 @@ end_ind = datetime('30-May-2000','Format','dd-MMM-uuuu');
 S = timerange(start_ind,end_ind,'closed');
 data = data(S,:);
 
-min_tmp = min(data,[],"all");
-max_tmp = max(data.T0);
+min_tmp = min(min_tmp.min,min(data,[],"all"));
+max_tmp = max(max_tmp.max,max(data.T0));
 
 cmap = get(0, 'defaultaxescolororder');
 
-figure('units','normalized','OuterPosition',[0 0 1 1]);
-t = tiledlayout(3,1,'TileSpacing','tight','Padding','tight');
+% figure('units','normalized','OuterPosition',[0 0 1 1]);
+% t = tiledlayout(3,1,'TileSpacing','tight','Padding','tight');
 
-nexttile,
+nexttile(2),
 ind1 = find(data.T0<0);
 ind2 = find(data.T0>=0);
 scatter(data.Date(ind1),data.T0(ind1),12,cmap(1,:))
 hold on,
 scatter(data.Date(ind2),data.T0(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceColor", "#EDB120")
-set(gca, 'Box', 'on', 'XTick',[], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
+set(gca, 'Box', 'on', 'XTick',[], 'yticklabels', [], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp]);
 % Set title for each subplot
-tt1 = title('Depth = 0 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+tt1 = title('Depth = 0 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
-nexttile,
+nexttile(4),
 ind1 = find(data.T_07<0);
 ind2 = find(data.T_07>=0);
 scatter(data.Date(ind1),data.T_07(ind1),12,cmap(1,:))
 hold on,
 scatter(data.Date(ind2),data.T_07(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceColor", "#EDB120")
-set(gca, 'Box', 'on', 'XTick',[], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
+set(gca, 'Box', 'on', 'XTick',[], 'yticklabels', [], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp]);
 % Set title for each subplot
-title('Depth = 7 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+title('Depth = 7 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
-nexttile,
+nexttile(6),
 ind1 = find(data.T_12<0);
 ind2 = find(data.T_12>=0);
-scatter(data.Date(ind1),data.T_12(ind1),12,cmap(1,:))
+scatter(data.Date(ind1),data.T_12(ind1),12,cmap(1,:), 'DisplayName','Freezing')
 hold on,
-scatter(data.Date(ind2),data.T_12(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceColor", "#EDB120")
-set(gca, 'Box', 'on', 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
+scatter(data.Date(ind2),data.T_12(ind2),12,cmap(2,:), "filled", "o", "MarkerFaceColor", "#EDB120", 'DisplayName','Thawing')
+set(gca, 'Box', 'on', 'yticklabels', [], 'FontSize', size1, 'TickLabelInterpreter', 'latex', ...
 'YMinorGrid', 'on', 'YMinorTick', 'on', 'TickDir', 'in', 'YGrid', 'on', 'ylim', [min_tmp.min max_tmp]);
 % Set title for each subplot
-title('Depth = 12 cm', "Interpreter","latex",...
-    'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
-ax = gca;
-ax.TitleHorizontalAlignment = 'left';
-ax.Title.VerticalAlignment = 'baseline';
+title('Depth = 12 cm', "Interpreter","latex");%,'BackgroundColor',[0.941176470588235 0.941176470588235 0.941176470588235]);
+% ax = gca;
+% ax.TitleHorizontalAlignment = 'left';
+% ax.Title.VerticalAlignment = 'bottom';
 
-ylabel(t, 'Soil temperature $(^{\circ}C)$','interpreter','latex','FontSize',size1+10);
+ylabel(t, 'Soil temperature $(^{\circ}C)$','interpreter','latex','FontSize',size1+5);
+xlabel(gca, 'Deadhorse','interpreter','latex','FontSize',size1+5)
+
+legend1 = legend(gca,'show','Location','northeastoutside');
+set(legend1,'Orientation','horizontal','Interpreter','latex','FontSize',size1+5);
+legend1.Layout.Tile = 'North'; % <-- place legend east of tiles
 
 %Export
-exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Deadhorse.pdf'),'ContentType','vector')
-fprintf('Finito!\n')
-exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temp_Deadhorse.pdf'),'ContentType','vector')
-close(gcf)
-%%reduce the size of the title of each subfigure title 
+exportgraphics(t,strcat('C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\FT_Temperatures.pdf'),'Resolution',300)
 
 
 %% Permafrost Area Fraction Plot for introduction
@@ -625,7 +679,7 @@ for i = length(depths):-1:1
     % add values over bars 2
     xtips2 = b(2).XEndPoints;
     ytips2 = yl(1)/2 + b(2).YEndPoints/2;
-    labels2 = string(round(b(3).YData,2));
+    labels2 = string(round(b(2).YData,2));
     text(xtips2,ytips2,strcat(labels2,'\%'),'HorizontalAlignment','center','Rotation',90,...
         'VerticalAlignment','middle', 'Interpreter','latex','FontSize',20, 'Color','w');
     
@@ -854,7 +908,7 @@ for i = length(depths):-1:1
     % add values over bars 2
     xtips2 = b(2).XEndPoints;
     ytips2 = yl(1)/2 + b(2).YEndPoints/2;
-    labels2 = string(round(b(3).YData,2));
+    labels2 = string(round(b(2).YData,2));
     text(xtips2,ytips2,strcat(labels2,'\%'),'HorizontalAlignment','center','Rotation',90,...
         'VerticalAlignment','middle', 'Interpreter','latex','FontSize',20, 'Color','w');
     
@@ -1011,7 +1065,7 @@ set(lgd,'Interpreter','latex','FontSize',20);
 xlabel(t, 'Prediction Horizon (days)', 'FontSize', 30, 'interpreter', 'latex');
 
 
-% exportgraphics(t,'C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\mainResults_ToolikLake.pdf', 'Resolution', 300) % Use vector for best quality
+exportgraphics(t,'C:\Users\mohamed.ahajjam\Desktop\UND\Defense resiliency platform\Datasets\FreezeThaw\mainResults_ToolikLake.pdf', 'Resolution', 300) % Use vector for best quality
 
 %% *Monthly TimePlots (separated)
 addpath('C:\Users\mohamed.ahajjam\Desktop\Misc\MEDIUM\Article1')
